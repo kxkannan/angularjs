@@ -1,26 +1,24 @@
 
-var weatherApp = angular.module("weatherApp", ['ngRoute', 'ngResource']);
+var weatherApp = angular.module("weatherApp", ['ngResource', 'ui.router']);
 
 //ROUTES
-weatherApp.config(function($routeProvider){
+weatherApp.config(function($stateProvider, $urlRouterProvider){
+    
+    $urlRouterProvider.otherwise("/home");
    
-    $routeProvider
+    $stateProvider
     
-    .when('/', {
-        templateUrl: 'pages/home.htm',
-        controller: 'homeController'
-    })
+      .state('home', {
+          url: '/home',
+          templateUrl: 'pages/home.htm',
+          controller: 'homeController'
+       })
     
-    .when('/forecast', {
-        templateUrl: 'pages/forecast.htm',
-        controller: 'forecastController'
-    })
-    
-    .when('/forecast/:days', {
-        templateUrl: 'pages/forecast.htm',
-        controller: 'forecastController'
-    })
-    
+      .state('forecast', {
+             url: '/forecast/:days',
+             templateUrl: 'pages/forecast.htm',
+             controller: 'forecastController'
+       })
     
 });
 
@@ -28,7 +26,7 @@ weatherApp.config(function($routeProvider){
 
 weatherApp.service('cityService', function(){
     
-    this.city = "New York, NY"
+    this.city = "New York, NY";
     
 })
 
@@ -47,14 +45,19 @@ weatherApp.controller('homeController', ['$scope', '$resource', 'cityService', f
     
 }]);
 
-weatherApp.controller('forecastController', ['$scope', '$resource', '$routeParams', 'cityService', function($scope,  $resource, $routeParams, cityService) {
+weatherApp.controller('forecastController', ['$scope', '$resource', '$stateParams', 'cityService', function($scope,  $resource, $stateParams, cityService) {
  
+    console.log("forecast controller called");
     
     $scope.city = cityService.city;
     
-    $scope.days = $routeParams.days || '2';
+    $scope.days = $stateParams.days || '2';
     
-     $scope.weatherAPI = $resource("http://api.openweathermap.org/data/2.5/forecast/daily?APPID=9865d562902d2c70ad4cb3c0ef5d8b97", { callback: "JSON_CALLBACK"}, { get: { method: "JSONP"}});
+    url = "http://api.openweathermap.org/data/2.5/forecast/daily?APPID=9865d562902d2c70ad4cb3c0ef5d8b97";
+    
+    console.log("url: " + url);
+    
+    $scope.weatherAPI = $resource(url, { callback: "JSON_CALLBACK"}, { get: { method: "JSONP"}});
     
     $scope.weatherResult = $scope.weatherAPI.get( { q: $scope.city, cnt: $scope.days});
     
